@@ -62,7 +62,7 @@ def CpRqRpClass(com_str):
 #############################################################
 #
 #  Useage:
-#      1. request, response 메소드를 지닌 사용자 클래스를 정의
+#      1. request, response 메소드를 지닌 사용자 클래스를 정의 (반드시 object상속할 것)
 #      2. 해당 클래스를 CpRqRpClass 데코레이터로 Wrapping
 #      3. 데코레이터의 인자는 COM객체 문자열을 넣어준다.
 #
@@ -104,6 +104,20 @@ if __name__ == '__main__':
         pythoncom.PumpWaitingMessages()
         time.sleep(0.01)
 
+
+#########################
+# 실행결과
+"""
+C:\Python27\python.exe C:/Users/lhw/Documents/GitHub/cppy/prttype.py
+<class '__main__.DecoratedCpRqRpClass'>
+<class '__main__.DecoratedCpRqRpClass'>
+KODEX 레버리지
+KODEX 인버스
+KODEX 레버리지
+KODEX 인버스
+KODEX 레버리지
+KODEX 인버스
+"""
 
 
 
