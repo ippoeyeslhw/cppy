@@ -82,7 +82,7 @@ def CpSubPubClass(com_str):
             raise Exception('"publish" method is not exist in your class')
 
         # 사이보스 플러스의 sub/pub 통신을 사용하기 위한 이벤트 핸들러
-        class CpRqRpEventHandler:
+        class CpSubPubEventHandler:
             def OnReceived(self):
                 #연결된 유저객체의 response 메서드를 재호출한다.
                 self.usr_obj.publish(self.com_obj)
@@ -91,8 +91,8 @@ def CpSubPubClass(com_str):
         class DecoratedCpSubPubClass(usr_cls):
             def __init__(self):
                 # 사이보스 sub/pub 새로운 이벤트 핸들러를 생성한다.
-                handler = new.classobj('CpRqRpEventHandler_%s'%id(self),
-                    (CpRqRpEventHandler,),
+                handler = new.classobj('CpSubPubEventHandler_%s'%id(self),
+                    (CpSubPubEventHandler,),
                     {}
                 )
                 # 핸들러에 유저객체와 com객체 연결
