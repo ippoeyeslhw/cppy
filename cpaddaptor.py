@@ -178,15 +178,14 @@ if __name__ == '__main__':
 #########################
 # 실행결과
 """
-C:\Python27\python.exe C:/Users/lhw/Documents/GitHub/cppy/cpaddaptor.py
 <class '__main__.DecoratedCpRqRpClass'>
 <class '__main__.DecoratedCpRqRpClass'>
+<class '__main__.DecoratedCpSubPubClass'>
 KODEX 레버리지
 KODEX 인버스
 KODEX 레버리지
-KODEX 인버스
-KODEX 레버리지
-KODEX 인버스
+
+Process finished with exit code -1
 """
 
 
