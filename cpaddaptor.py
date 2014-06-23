@@ -146,14 +146,29 @@ if __name__ == '__main__':
             time.sleep(2)
             self.request()
 
+    @CpSubPubClass('dscbo1.StockCur')
+    class StkCur(object):
+        def subscribe(self, com_obj):
+            com_obj.SetInputValue(0, 'A122630')
+            com_obj.Subscribe()
+
+        def publish(self, com_obj):
+            print 'nowpr: %s'%(com_obj.GetHeaderValue(13))
+
+
+
     a = DummyClass()
     print a.__class__
     b = CloneClass()
     print b.__class__
+    c = StkCur()
+    print c.__class__
 
     a.request()
     time.sleep(0.5)
     b.request()
+
+    c.subscribe()
 
     while True:
         pythoncom.PumpWaitingMessages()
@@ -163,7 +178,7 @@ if __name__ == '__main__':
 #########################
 # 실행결과
 """
-C:\Python27\python.exe C:/Users/lhw/Documents/GitHub/cppy/prttype.py
+C:\Python27\python.exe C:/Users/lhw/Documents/GitHub/cppy/cpaddaptor.py
 <class '__main__.DecoratedCpRqRpClass'>
 <class '__main__.DecoratedCpRqRpClass'>
 KODEX 레버리지
