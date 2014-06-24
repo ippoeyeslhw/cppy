@@ -17,6 +17,8 @@ cybosplus의 Win32Com 객체와 연결하도록 하는 두가지의 클래스 �
 클래스 데코레이터입니다. Request/Response 통신방식을 
 클래스로 구조화하여 사용합니다. 사용례는 다음과 같습니다.
 
+```python
+
     from cppy.adaptor import CpRqRpClass
 
     @CpRqRpClass('dscbo1.StockMst')
@@ -37,7 +39,8 @@ cybosplus의 Win32Com 객체와 연결하도록 하는 두가지의 클래스 �
         while True:
             pythoncom.PumpWaitingMessages()
             time.sleep(0.01)
-            
+```
+        
 실행결과
 
     C:\Python27\python.exe C:/Users/lhw/Documents/GitHub/cppy/test/adaptor_test.py
