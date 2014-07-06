@@ -1,13 +1,9 @@
-<<<<<<< HEAD
 # coding: utf-8
-=======
->>>>>>> origin/processor_impl
 __author__ = 'lhw'
 
 
 import multiprocessing
 import pythoncom, time
-<<<<<<< HEAD
 import collections
 
 
@@ -62,29 +58,9 @@ class QueueControler(multiprocessing.Process):
         while True:
             # 반복 실행될 작업
             self.__buf_sweep()
-
-=======
-
-
-
-class CpScheduler(multiprocessing.Process):
-    def __init__(self):
-        self.req_adaptors = multiprocessing.Queue()
-        self.sub_adaptors = multiprocessing.Queue()
-        super(CpScheduler, self).__init__()
-
-    def run(self):
-        while True:
-            # looping
-
-            pythoncom.PumpWaitingMessages()
->>>>>>> origin/processor_impl
             time.sleep(0.001)
 
 
-
-
-<<<<<<< HEAD
 
 
 
@@ -101,14 +77,4 @@ if __name__ == '__main__':
         time.sleep(5)
         qc.push('test', 'test.data%s'%cnt)
         cnt += 1
-=======
-class EventProcessor(multiprocessing.Process):
-    def __init__(self):
-        super(EventProcessor, self).__init__()
-
-    def run(self):
-        pass
->>>>>>> origin/processor_impl
-
-
 
