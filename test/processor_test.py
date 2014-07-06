@@ -25,6 +25,7 @@ class QueueControler(multiprocessing.Process):
         ts = time.time() # time stamp
         self.buf.put((ts,key,data))
 
+
     # buffer 에 쌓인 데이터를 일괄 처리한다.
     def __buf_sweep(self):
         #############################################
