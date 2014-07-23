@@ -1,80 +1,47 @@
-# coding: utf-8
-__author__ = 'lhw'
+# coding=utf-8
+from cppy.adaptor import CpRqRpClass, CpSubPubClass
+from cppy.processor import EventProcessor
 
+evntproc = None
 
-import multiprocessing
-import pythoncom, time
-import collections
+@CpRqRpClass('CpSysDib.StockChart')
+class StkChart(object):
+    def request(self, com_obj):
+        com_obj.SetInputValue(0, 'A003540')
+        com_obj.SetInputValue(1, ord('2'))
+        com_obj.SetInputValue(4, 1000)
+        com_obj.SetInputValue(5, [5])
+        com_obj.SetInputValue(6, ord('D'))
 
+        com_obj.Request()
 
-
-class QueueControler(multiprocessing.Process):
-    def __init__(self):
-        super(QueueControler, self ).__init__()
-        self.buf   = multiprocessing.Queue()
-        self.q_set = dict()
-        self.DEQUE_SIZE = 4096
-
-    # 다른 프로세스에 의해 불려지는 인터페이스
-    # 일단 데이터가 buffer에 push 된다.
-    def push(self, key, data):
-        ts = time.time() # time stamp
-        self.buf.put((ts,key,data))
-
-
-    # buffer 에 쌓인 데이터를 일괄 처리한다.
-    def __buf_sweep(self):
-        #############################################
-        # 버퍼에 쌓인 데이터를 각 key 에 맞게
-        # 덱에 분배를 한다 이때 sliding window 의 성격을
-        # 만들기 위해 덱의 크기를 일정하게 유지한다.
-        ##############################################
-
-        # 정해진 크기만큼 분할해서 처리
-        for i in xrange(self.DEQUE_SIZE):
-            if self.buf.empty():
-                break
-
-            itm = self.buf.get()
-            ts  = itm[0]
-            key = itm[1]
-            dat = itm[2]
-
-            # 키가 큐집합에 없는 경우 덱 추가
-            if (key in self.q_set) == False:
-                self.q_set[key] = collections.deque()
-
-            # 덱에 원소 추가 (왼쪽으로 넣는다)
-            self.q_set[key].appendleft((ts, dat))
-
-        # 모든 덱의 사이즈를 조정
-        for key in self.q_set.keys():
-            while self.DEQUE_SIZE <= len(self.q_set[key]):
-                # 덱에 원소 제거 (오른쪽으로 뺀다)
-                self.q_set[key].pop()
-
-
-    def run(self):
-        while True:
-            # 반복 실행될 작업
-            self.__buf_sweep()
-            time.sleep(0.001)
+    def response(self, com_obj):
+        cnt = com_obj.GetHeaderValue(3)
+        for i in xrange(cnt):
+            evntproc.push('A003540_%s_dt'%i, com_obj.GetDataValue(0,i))
 
 
 
+def echo(serieses, key, dat):
+    print 'key:%s, dat:%s'%(key,dat)
 
 
 
-if __name__ == '__main__':
-    print 'processor_test.py'
+# 윈도우의 경우 multiprocessing 사용시
+# if __name__ == "__main__" 에서 사용
 
-    qc = QueueControler()
-    qc.start()  # 다른 프로세스에 의해 실행
+if __name__ == "__main__":
+    # 이벤트처리기 구동
+    evntproc = EventProcessor()
+    evntproc.add_observer(['A003540*'], echo)
+    evntproc.start()
 
-    cnt = 0
+    # 차트 데이터 요청 (비동기)
+    stkchart = StkChart()
+    stkchart.request()
+
+
+    import pythoncom, time
     while True:
-        print 'start'
-        time.sleep(5)
-        qc.push('test', 'test.data%s'%cnt)
-        cnt += 1
-
+        pythoncom.PumpWaitingMessages()
+        time.sleep(0.01)
