@@ -18,10 +18,15 @@ class StkChart(object):
     def response(self, com_obj):
         cnt = com_obj.GetHeaderValue(3) #  수신개수
         for i in xrange(cnt):
+            if i == 98:
+                # 98번째에 show_series라는 키를 전달
+                evntproc.push('show_series', 'A003540')
+
+            if i == 0:
+                evntproc.push('show_start', 'start')
+
             # 키와 값을 인자로 하여 이벤트처리기에 전달
             evntproc.push('A003540_clpr', com_obj.GetDataValue(0,i))
-            if i == 98:
-                evntproc.push('show_series', 'A003540')
 
 
 
@@ -30,6 +35,9 @@ def echo(serieses, key, dat):
 
 
 def show_series(serieses, key, dat):
+    if dat == 'start':
+        print 'start'
+
     if dat == 'A003540':
         for val in serieses['A003540_clpr']:
             print val
