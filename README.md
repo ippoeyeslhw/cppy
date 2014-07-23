@@ -13,5 +13,5 @@ cybosplus + python 을 이용하여 투자분석 및 시스템트레이딩을
  * pywin32 라이브러리
 
 
-![alt text](http://apama.typepad.com/.shared/image.html?/photos/uncategorized/apama.jpg "test")
+![alt text](http://apama.typepad.com/.shared/image.html?/photos/uncategorized/apama.jpg)
 
