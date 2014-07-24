@@ -55,7 +55,11 @@ class EventProcessor(multiprocessing.Process):
 
                 # Notify
                 for callback in self.observers[key]:
-                    callback(self.serieses, key, dat)
+                    try:
+                        callback(self.serieses, key, dat)
+                    except:
+                        # todo: 콜백예외처리
+                        pass
 
             except Queue.Empty:
                 continue
