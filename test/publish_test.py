@@ -34,8 +34,8 @@ class StkCur(object):
 # 주식 호가잔량
 @CpSubPubClass('dscbo1.StockJpBid')
 class StkBid(object):
-    def __init__(self):
-        self.itm_cod = 'A122630'
+    def __init__(self, itm_cod='A122630'):
+        self.itm_cod = itm_cod
 
     def subscribe(self, com_obj):
         com_obj.Unsubscribe()
@@ -80,21 +80,17 @@ if __name__ == "__main__":
     evntproc.start()
 
     # 현재가, 매수매도구분, 순간체결량을 생산
-    stkcur1 = StkCur()
-    stkcur1.itm_cod = 'A122630'
+    stkcur1 = StkCur('A122630')
     stkcur1.subscribe()
 
-    stkcur2 = StkCur()
-    stkcur2.itm_cod = 'A114800'
+    stkcur2 = StkCur('A114800')
     stkcur2.subscribe()
 
     # 호가잔량 생산
-    stkbid1 = StkBid()
-    stkbid1.itm_cod = 'A122630'
+    stkbid1 = StkBid('A122630')
     stkbid1.subscribe()
 
-    stkbid2 = StkBid()
-    stkbid2.itm_cod = 'A114800'
+    stkbid2 = StkBid('A114800')
     stkbid2.subscribe()
 
     import pythoncom, time

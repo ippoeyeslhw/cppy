@@ -36,7 +36,7 @@ def CpRqRpClass(com_str):
 
         # 유저클래스를 상속하는 자식클래스를 생성
         class DecoratedCpRqRpClass(usr_cls):
-            def __init__(self):
+            def __init__(self, *args, **kwargs):
                 # 사이보스 Rq/Rp 새로운 이벤트 핸들러를 생성한다.
                 handler = new.classobj('CpRqRpEventHandler_%s'%id(self),
                     (CpRqRpEventHandler,),
@@ -49,7 +49,7 @@ def CpRqRpClass(com_str):
                 # 핸들러를 유저객체에 연결
                 self.handler = handler
 
-                super(self.__class__, self).__init__()
+                super(self.__class__, self).__init__(*args, **kwargs)
 
             def request(self):
                 # 유저클래스에서는 request를 정의하여야하며
@@ -89,7 +89,7 @@ def CpSubPubClass(com_str):
 
         # 유저클래스를 상속하는 자식클래스를 생성
         class DecoratedCpSubPubClass(usr_cls):
-            def __init__(self):
+            def __init__(self,*args, **kwargs):
                 # 사이보스 sub/pub 새로운 이벤트 핸들러를 생성한다.
                 handler = new.classobj('CpSubPubEventHandler_%s'%id(self),
                     (CpSubPubEventHandler,),
@@ -102,7 +102,7 @@ def CpSubPubClass(com_str):
                 # 핸들러를 유저객체에 연결
                 self.handler = handler
 
-                super(self.__class__, self).__init__()
+                super(self.__class__, self).__init__(*args, **kwargs)
 
             def subscribe(self):
                 # 유저클래스에서는 subscribe 정의하여야하며
