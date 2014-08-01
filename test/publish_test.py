@@ -71,6 +71,13 @@ def cls_echo(serieses, key, dat):
 def ord_echo(serieses, key, dat):
     print 'key:%s, dat:%s'%(key, dat)
 
+
+
+
+###################################################
+# main : 어뎁터들과 옵저버들을 등록하고 서비스를 기동한다.
+#
+###################################################
 if __name__ == "__main__":
 
     # 이벤트 처리기 세팅
@@ -93,8 +100,13 @@ if __name__ == "__main__":
     stkbid2 = StkBid('A114800')
     stkbid2.subscribe()
 
+    ##############################################
+    # WinCOM32 이벤트 생성,
+    # sleep time으로 메세지를 펌핑시키므로 비효율적이다.
+    # 따라서 이벤트 처리기는 자식 프로세스에서 동작
+    ##############################################
     import pythoncom, time
     while True:
         pythoncom.PumpWaitingMessages()
-        time.sleep(0.01)
+        time.sleep(0.001) # 최소시간간격 (실질환경은 0.015초에 가까울것)
 
