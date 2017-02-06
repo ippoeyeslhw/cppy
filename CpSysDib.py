@@ -1,7 +1,6 @@
 from cppy.adaptor import class_factory
 
-CpField = class_factory('CpSysDib.CpField')
-CpFields = class_factory('CpSysDib.CpFields')
+
 CpSvrNew7224 = class_factory('CpSysDib.CpSvrNew7224')
 CpSvr3745 = class_factory('CpSysDib.CpSvr3745')
 CpSvr7043 = class_factory('CpSysDib.CpSvr7043')
