@@ -1,7 +1,5 @@
 from cppy.adaptor import class_factory
 
-CpField = class_factory('dscbo1.CpField')
-CpFields = class_factory('dscbo1.CpFields')
 StockMst = class_factory('dscbo1.StockMst')
 StockCur = class_factory('dscbo1.StockCur')
 StockBid = class_factory('dscbo1.StockBid')
