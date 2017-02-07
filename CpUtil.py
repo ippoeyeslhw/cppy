@@ -27,7 +27,6 @@ class CpStockCode(object):
     def __init__(self):
         self.disp = win32com.client.Dispatch('CpUtil.CpStockCode')
 
-
     def CodeToName(self, cod):
         return self.disp.CodeToName(cod)
 
@@ -56,8 +55,64 @@ class CpStockCode(object):
         return self.disp.GetPriceUnit(code, basePrice, directionUp)
 
 
-
 class CpCodeMgr(object):
+    CPC_MARKET_NULL = 0
+    CPC_MARKET_KOSPI = 1
+    CPC_MARKET_KOSDAQ = 2
+    CPC_MARKET_FREEBOARD = 3
+    CPC_MARKET_KRX = 4
+    CPC_CONTROL_NONE = 0
+    CPC_CONTROL_ATTENTION = 1
+    CPC_CONTROL_WARNING = 2
+    CPC_CONTROL_DANGER_NOTICE = 3
+    CPC_CONTROL_DANGER = 4
+    CPC_SUPERVISION_NONE = 0
+    CPC_SUPERVISION_NORMAL = 1
+    CPC_STOCK_STATUS_NORMAL = 0
+    CPC_STOCK_STATUS_STOP = 1
+    CPC_STOCK_STATUS_BREAK = 2
+    CPC_CAPITAL_NULL = 0
+    CPC_CAPITAL_LARGE = 1
+    CPC_CAPITAL_MIDDLE = 2
+    CPC_CAPITAL_SMALL = 3
+    CPC_KOSPI200_NONE = 0
+    CPC_KOSPI200_CONSTRUCTIONS_MACHINERY = 1
+    CPC_KOSPI200_SHIPBUILDING_TRANSPORTATION = 2
+    CPC_KOSPI200_STEELS_METERIALS = 3
+    CPC_KOSPI200_ENERGY_CHEMICALS = 4
+    CPC_KOSPI200_IT = 5
+    CPC_KOSPI200_FINANCE = 6
+    CPC_KOSPI200_CUSTOMER_STAPLES = 7
+    CPC_KOSPI200_CUSTOMER_DISCRETIONARY = 8
+    CPC_KSE_SECTION_KIND_NULL = 0
+    CPC_KSE_SECTION_KIND_ST = 1
+    CPC_KSE_SECTION_KIND_MF = 2
+    CPC_KSE_SECTION_KIND_RT = 3
+    CPC_KSE_SECTION_KIND_SC = 4
+    CPC_KSE_SECTION_KIND_IF = 5
+    CPC_KSE_SECTION_KIND_DR = 6
+    CPC_KSE_SECTION_KIND_SW = 7
+    CPC_KSE_SECTION_KIND_SR = 8
+    CPC_KSE_SECTION_KIND_ELW = 9
+    CPC_KSE_SECTION_KIND_ETF = 10
+    CPC_KSE_SECTION_KIND_BC = 11
+    CPC_KSE_SECTION_KIND_FETF = 12
+    CPC_KSE_SECTION_KIND_FOREIGN = 13
+    CPC_KSE_SECTION_KIND_FU = 14
+    CPC_KSE_SECTION_KIND_OP = 15
+    CPC_LAC_NORMAL = 0
+    CPC_LAC_EX_RIGHTS = 1
+    CPC_LAC_EX_DIVIDEND = 2
+    CPC_LAC_EX_DISTRI_DIVIDEND = 3
+    CPC_LAC_EX_RIGHTS_DIVIDEND = 4
+    CPC_LAC_INTERIM_DIVIDEND = 5
+    CPC_LAC_EX_RIGHTS_INTERIM_DIVIDEND = 6
+    CPC_LAC_ETC = 99
+    CPC_PARPRICE_CHANGE_NONE = 0
+    CPC_PARPRICE_CHANGE_DIVIDE = 1
+    CPC_PARPRICE_CHANGE_MERGE = 2
+    CPC_PARPRICE_CHANGE_ETC = 99
+
     def __init__(self):
         self.disp = win32com.client.Dispatch('CpUtil.CpCodeMgr')
     def CodeToName(self, code):
@@ -136,12 +191,16 @@ class CpCodeMgr(object):
         return self.disp.GetMarketEndTime()
 
     def isCommonStock(self, code):
+        """보통주인지 판별 (우선주일경우 False)
+        """
         if code[-1] == '0':
             return True
         return False
 
     def isSpacStock(self, code):
+        """스팩주식여부"""
         nm = self.CodeToName(code)
+        # python2.x 인경우  u'스팩'
         if nm.find('스팩') == -1:
             return False
         return True
