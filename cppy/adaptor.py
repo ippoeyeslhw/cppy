@@ -1,3 +1,4 @@
+# coding: utf-8
 import win32com
 import win32com.client
 
