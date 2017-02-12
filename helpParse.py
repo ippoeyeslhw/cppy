@@ -1,103 +1,4 @@
 # coding: utf-8
-from cppy.CpUtil import CpCodeMgr
-from cppy.CpUtil import CpCybos
-
-import queue
-
-def getCommonStockCods():
-    '''
-    일반적인 종목코드를 리스트로 반환합니다.
-    (거래소+코스닥, 우선주제외, 스팩제외, 경고위험제외, 관리종목제외, 거래정지중단제외, 리츠워런트ETFETN제외)
-    :return: code list
-    '''
-    ret = []
-    codmgr = CpCodeMgr()
-
-    kospi_cods = codmgr.GetStockListByMarket(CpCodeMgr.CPC_MARKET_KOSPI)
-    kosdq_cods = codmgr.GetStockListByMarket(CpCodeMgr.CPC_MARKET_KOSDAQ)
-
-    # 리스트를 합침
-    cods_list = kospi_cods + kosdq_cods
-
-    for cod in cods_list:
-        # 감리구분: 정상 + 주의 종목 까지
-        cont_kind = codmgr.GetStockControlKind(cod)
-        if cont_kind != CpCodeMgr.CPC_CONTROL_NONE:
-            if cont_kind != CpCodeMgr.CPC_CONTROL_ATTENTION:
-                continue
-
-        # 관리구분: 관리종목 제외
-        super_kind = codmgr.GetStockSupervisionKind(cod)
-        if super_kind != CpCodeMgr.CPC_SUPERVISION_NONE:
-            continue
-
-        # 상태구분: 정상 (정지,중단 제외)
-        stat_kind = codmgr.GetStockStatusKind(cod)
-        if stat_kind != CpCodeMgr.CPC_STOCK_STATUS_NORMAL:
-            continue
-
-        # 부구분 : 주권만 선택 (ETF, 리츠, 워런트 등등 제외)
-        sec_kind = codmgr.GetStockSectionKind(cod)
-        if sec_kind != CpCodeMgr.CPC_KSE_SECTION_KIND_ST:
-            continue
-
-        # 우선주제외
-        if codmgr.isCommonStock(cod) == False:
-            continue
-
-        # 스팩제외
-        if codmgr.isSpacStock(cod) == True:
-            continue
-
-        # 통과종목 append
-        ret.append(cod)
-
-    ret.sort()
-    return ret
-
-
-def generatorIntervalRequest(q, waitTick=250, limitType=CpCybos.LT_NONTRADE_REQUEST):
-    '''
-    Rq/Rp 균등시간 요청하기 위한 제네레이터
-    :param q: Request 메서드가 있는 객체
-    :param waitTick:  next 호출 횟수 간격
-    :param limitType: 제한타입 Default: nontrade
-    :return: Request호출시 True, 그외 False
-    '''
-    if q.__class__.__name__ != 'Queue':
-        raise 'param queu error'
-
-    cpcybos = CpCybos()
-    desc_cnt = 0
-
-    while True:
-        ret = False
-        # tick count 수가 없으면 (request 가능)
-        if desc_cnt <= 0:
-            # 가능 개수를 센다.
-            rcnt = cpcybos.GetLimitRemainCount(limitType)
-            if rcnt > 0:
-                try:
-                    # queue에서 가져옴
-                    itm = q.get_nowait()
-                    itm.Request()
-                    ret = True
-                    desc_cnt = waitTick
-                except queue.Empty:
-                    pass
-            else:
-                # wait more
-                pass
-        else:
-            desc_cnt -= 1
-
-        # generator
-        yield ret
-
-
-
-
-
 
 import re
 
@@ -307,3 +208,177 @@ class Sample%s(object):
         header_format,
         data_format
         ))
+
+helpstring = '''
+CpSvr9842S
+
+설명
+ 투자 주체별로 어느 종목을 얼마만큼 매수잔고로 보유하고 있고, 혹은 매도잔고로 보유하고 있는지 직관적으로 파악할수 있으며, 이를 투자주체별로 비교할수 있다
+(고객 등급 제한 오브젝트 입니다.)
+
+통신종류
+ Subscribe/Publish
+
+관련 RQ/RP
+ CpSvr9842
+
+관련CYBOS
+ [9842 투자주체별 종목 비교] 실시간
+
+모듈 위치
+ cpsysdib.dll
+
+
+Method
+object.SetInputValue(type,value)
+
+type에 해당하는 입력 데이터를 value 값으로 지정합니다
+
+type: 입력 데이터 종류
+
+0 - (char) 장구분
+
+코드
+ 내용
+
+'1'
+ 선물
+
+'2'
+ 콜옵션
+
+'3'
+ 풋옵션
+
+
+1 - (char) 월물구분
+
+코드
+ 내용
+
+'1'
+ 최근월물
+
+'2'
+ 차근월물
+
+
+2 - (char) 일자구분
+
+코드
+ 내용
+
+'1'
+ 당일
+
+'2'
+ 기간
+
+
+3- (short) 투자자 구분 코드
+
+코드
+ 내용
+
+0
+ 개인
+
+1
+ 외국인
+
+2
+ 기관계
+
+3
+ 증권
+
+4
+ 보험
+
+5
+ 투신
+
+6
+ 은행
+
+7
+ 종금/신금
+
+8
+ 기금/연금
+
+9
+ 기타(국가)
+
+10
+ 선물회사
+
+11
+ 기타(법인)
+
+
+value: 새로 지정할 값
+
+
+
+value = object.GetHeaderValue(type)
+
+type에 해당하는 헤더 데이터를 반환합니다
+
+type: 데이터 종류
+
+0- (short) 투자자 구분 코드
+
+1 - (ulong) 수신 시간
+
+2 - (short) 종목갯수
+
+반환값: 데이터 종류에 해당하는 값
+
+value = object.GetDataValue (Type,index)
+
+type에 해당하는 데이터를 반환합니다
+
+type: 데이터 종류
+
+0-( string) 대상종목코드
+ 1-( long ) 보유계약
+
+2-( float ) 평균단가
+
+3-( long) 보유금액
+
+4-( float ) 확정손익
+
+index: data index
+
+반환값: 데이터 종류의 index번째 data
+
+object.Subscribe()
+
+실시간 데이터 수신을 신청한다
+
+object.Unsubscribe()
+
+실시간 데이터 수신를 해지한다
+
+object.Request()
+
+사용하지 않음
+
+object.BlockRequest()
+
+사용하지 않음
+
+Event
+
+Object.Received
+
+해당하는 데이터를 수신했을 때 발생하는 이벤트
+
+
+'''
+
+
+
+print(parseHelpPage(helpstring))

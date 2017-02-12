@@ -28,7 +28,7 @@ if isconnect == 1:
     rqQueue = queue.Queue()
 
     # 메세지 펌핑 루프
-    for rqBool in cppy.util.genNontradeRequest(rqQueue):
+    for rqBool in cppy.util.generatorIntervalRequest(rqQueue):
         pythoncom.PumpWaitingMessages()
         time.sleep(0.001)
 

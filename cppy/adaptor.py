@@ -41,4 +41,10 @@ def class_factory(com_str):
         def Unsubscribe(self):
             self.disp.Unsubscribe()
 
+        def GetContinue(self):
+            return self.disp.Continue
+
+        def GetDibStatus(self):
+            return self.disp.GetDibStatus()
+
     return ProductClass
