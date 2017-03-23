@@ -1,11 +1,17 @@
 # coding: utf-8
 from cppy.util import generateClass
 
+'''
+클래스 생성기로 코드를 생성하는 샘플코드 생성파일
+1. helpTxt에 도움말 내용 전체 복사붙여넣기
+2. 이파일 실행하여 출력코드를 복사하여 사용
+'''
+
 helpTxt = '''
-StockMst
+StockChart
 
 설명
- 주식 종목의 현재가에 관련된 데이터
+ 주식, 업종, ELW의 차트데이터를 수신합니다.
 
 통신종류
  Request/Reply
@@ -17,21 +23,161 @@ StockMst
  StockCur
 
 관련CYBOS
- [7021현재가] 주식 일반
+ [7400 통합챠트] 일,주,월,분,틱
 
 모듈 위치
- cpdib.dll
+ cpsysdib.dll
 
 
 Method
-
 object.SetInputValue(type,value)
 
 type에 해당하는 입력 데이터를 value 값으로 지정합니다
 
 type: 입력 데이터 종류
 
-0 - (string) 종목 코드
+0 - 종목코드(string): 주식(A003540), 업종(U001), ELW(J517016)의 종목코드
+
+1 - 요청구분(char):
+
+코드
+ 내용
+
+'1'
+ 기간으로 요청
+
+'2'
+ 개수으로 요청
+
+
+2 - 요청종료일(ulong): YYYYMMDD형식으로 데이터의 마지막(가장 최근) 날짜 Default(0) - 최근 거래날짜
+
+3 - 요청시작일(ulong): YYYYMMDD형식으로 데이터의 시작(가장 오래된) 날짜
+
+4 - 요청개수(ulong): 요청할 데이터의 개수
+
+5 - 필드(long or long array): 필드 또는 필드 배열
+
+필드값
+
+0: 날짜(ulong)
+
+1:시간(long) - hhmm
+
+2:시가(long or float)
+
+3:고가(long or float)
+
+4:저가(long or float)
+
+5:종가(long or float)
+
+6:전일대비(long or float) - 주) 대비부호(37)과 반드시 같이 요청해야 함
+
+8:거래량(ulong or ulonglong) 주) 정밀도 만원 단위
+
+9:거래대금(ulonglong)
+
+10:누적체결매도수량(ulong or ulonglong) - 호가비교방식 누적체결매도수량
+11:누적체결매수수량(ulong or ulonglong) - 호가비교방식 누적체결매수수량
+ (주) 10, 11 필드는 분,틱 요청일 때만 제공
+
+12:상장주식수(ulonglong)
+
+13:시가총액(ulonglong)
+
+14:외국인주문한도수량(ulong)
+
+15:외국인주문가능수량(ulong)
+
+16:외국인현보유수량(ulong)
+
+17:외국인현보유비율(float)
+
+18:수정주가일자(ulong) - YYYYMMDD
+
+19:수정주가비율(float)
+
+20:기관순매수(long)
+
+21:기관누적순매수(long)
+
+22:등락주선(long)
+
+23:등락비율(float)
+
+24:예탁금(ulonglong)
+
+25:주식회전율(float)
+
+26:거래성립률(float)
+
+37:대비부호(char) - 수신값은 GetHeaderValue 8 대비부호와 동일
+
+6 - 차트구분(char)
+
+코드
+ 내용
+
+'D'
+ 일
+
+'W'
+ 주
+
+'M'
+ 월
+
+'m'
+ 분
+
+'T'
+ 틱
+
+
+7 - 주기(ushort): Default-1
+
+8 - 갭보정여부(char)
+
+코드
+ 내용
+
+'0'
+ 갭무보정 [Default]
+
+'1'
+ 갭보정
+
+
+9 - 수정주가(char)
+
+코드
+ 내용
+
+'0'
+ 무수정주가 [Default]
+
+'1'
+ 수정주가
+
+
+10 - 거래량구분(char)
+
+코드
+ 내용
+
+'1'
+ 시간외거래량 모두 포함[Default]
+
+'2'
+ 장종료시간외거래량만 포함
+
+'3'
+ 시간외거래량 모두 제외
+
+'4'
+ 장전시간외거래량만 포함
+
 
 value: 새로 지정할 값
 
@@ -41,132 +187,72 @@ type에 해당하는 헤더 데이터를 반환합니다
 
 type: 데이터 종류
 
-0 - (string) 종목 코드
+0 - 종목코드(string)
 
-1 - (string) 종목 명
+1 - 필드개수(short)
 
-2 - (string) 대신 업종코드
+2 - 필드명의 배열(string array): 필드는 요청한 필드 값의 오름차순으로 정렬되어 있음
 
-3 - (string) 그룹 코드
+3 - 수신개수(long)
 
-4 - (short) 시간
+4 - 마지막봉틱수(ushort)
 
-5 - (string) 소속 구분(문자열)
+5 - 최근거래일(ulong): YYYYMMDD
 
-6 - (string) 대형,중형,소형
+6 - 전일종가(ulong or float)
 
-7 - 사용하지 않음
+7 - 현재가(ulong or float)
 
-8 - (long) 상한가
+8 - 대비부호(char)
 
-9- (long) 하한가
+코드
+ 내용
 
-10 - (long) 전일종가
+'1'
+ 상한
 
-11 - (long) 현재가
+'2'
+ 상승
 
-12 - (long) 전일대비
+'3'
+ 보합
 
-13 - (long) 시가
+'4'
+ 하한
 
-14 - (long) 고가
+'5'
+ 하락
 
-15 - (long) 저가
+'6'
+ 기세상한
 
-16 - (long) 매도호가
+'7'
+ 기세상승
 
-17 - (long) 매수호가
+'8'
+ 기세하한
 
-18 - (long) 누적거래량 [주의] 기준 단위를 확인하세요
-
-시장구분
- 기준 단위
-
-거래소,코스닥,프리보드
- 단주
-
-거래소 지수
- 천주
-
-코스닥 지수 프리보드 지수
- 단주
+'9'
+ 기세하락
 
 
-19 - (long) 누적거래대금 [주의] 기준 단위를 확인하세요
+9 - 대비(long or float)
 
-시장구분
- 기준 단위
+10 - 거래량(ulong or ulonglong)
 
-거래소
- 만원
+11 - 매도호가(ulong or float)
 
-코스닥,프리보드
- 천원
+12 - 매수호가(ulong or float)
 
-거래소 지수, 코스닥 지수
- 백만원
+13 - 시가(ulong or float)
 
-프리보드지수
- 천원
+14 - 고가(ulong or float)
 
+15 - 저가(ulong or float)
 
-20 - (long) EPS
+16 - 거래대금(ulonglong)
 
-21 - (long) 신고가
-
-22 - (long) 신고가일
-
-23 - (long) 신저가
-
-24 - (long) 신저가일
-
-25 - (short) 신용시장(전체)
-
-26 - (short) 결산월
-
-27 - (long) basis price (기준가)
-
-28 - (float) PER
-
-31 - (decimal) 상장주식수 [주의] 기준 단위를 확인하세요
-
-시장구분
- 기준 단위
-
-거래소
- 천주->단주
-
-코스닥,프리보드
- 단주
-
-
-32 - (long) 상장자본금
-
-33 - (long) 외국인 DATA 일자
-
-34 - (short) 외국인 TIME 일자
-
-35 - (decimal) 외국인 상장주식수
-
-36 - (decimal) 외국인 주문주식수
-
-37 - (long) 외국인 한도수량
-
-38 - (float) 외국인 한도비율
-
-39 - (decimal) 외국인 주문가능수량
-
-40 - (float) 외국인 주문가능비율
-
-42 - (string) 증권 전산 업종코드
-
-43 - (short) 매매 수량 단위
-
-44 - (char) 정상/이상급등/관리/거래 정지 등등 구분(코드)
-
-이 구분값 대신에 66, 67, 68번 구분값을 조합해서 사용하시기 바랍니다.
-
-[거래소 +코스닥]
+17 - 종목상태(char)
 
 '0' - 정상
 
@@ -218,264 +304,31 @@ type: 데이터 종류
 
 'Z' - ETF종목
 
-[프리보드]
+18 - 상장주식수(ulonglong)
 
-'0' - 정상
+19 - 자본금[백만원](ulong)
 
-'3' - 거래정지
+20 - 전일거래량(ulong or ulonglong)
 
-'4' - 불성실공시 1회
+21 - 최근갱신시간(ulong): hhmm
 
-'5' - 불성실공시 2회
+22 - 상한가(ulong or float)
 
-'6' - 불성실공시 1회 & 거래정지
-
-'7' - 불성실공시 2회 & 거래정지
-
-45 - (char) 소속 구분(코드)
-
-코드
- 내용
-
-'1'
- 거래소
-
-'4'
- 증권투자
-
-'5'
- 코스닥
-
-'6'
- 프리보드
-
-'7'
- 리츠
-
-
-46 - (long) 전일 거래량
-
-시장구분
- 기준 단위
-
-거래소,코스닥,프리보드
- 단주
-
-거래소지수
- 천주
-
-코스닥지수,프리보드지수
- 단주
-
-
-47 - (long) 52주 최고가
-
-48 - (long) 52주 최고일
-
-49 - (long) 52주 최저가
-
-50 - (long) 52주 최저일
-
-51 - 지원하지 않음
-
-52 - (string) 벤처기업 구분
-
- [코스닥과 프리보드만 해당됨]
-
-시장구분
- 내용
-
-거래소
- 해당사항없음
-
-코스닥
- 일반기업/벤처기업
-
-프리보드
- 일반기업/벤처기업/테크노파크일반/테크노파크벤쳐
-
-
-53 - (string) KOSPI200 채용 여부
-
-시장구분
- 내용
-
-거래소
- 미분류/제조업/전기통신/건설/유통서비스/금융
-
-
- 2011년 4월 1일부터 아래 값으로 변경
-
-시장구분
- 내용
-
-거래소
- 미채용/건설기계/조선운송/철강소재/에너지화학/정보통신/금융/필수소비재/자유소비재
-
-
-54 - (short) 액면가
-
-55 - (long) 예상 체결가
-
-56 - (long) 예상 체결가 전일 대비
-
-57 - (long) 예상 체결 수량
-
-58 - (char) 예상 체결가 구분 플래그
-
-코드
- 내용
-
-'0'
- 동시호가와 장중이외의 시간
-
-'1'
- 동시호가시간
-(예상체결가 들어오는 시간)
-
-'2'
- 장중
-
-
-59 - (char) 장 구분 플래그
-
-코드
- 내용
-
-'1'
- 장전예상체결
-
-'2'
- 장중
-
-'3'
- 장전시간외
-
-'4'
- 장후 시간외
-
-'5'
- 장후 예상체결
-
-
-60 - (char) 자사주 신청여부
-
-코드
- 내용
-
-'1'
- 신청
-
-'0'
- 미신청
-
-
-61 - (long) 자사주 신청 수량
-
-62 - (long) 거래원 외국계매도총합
-
-63 - (long) 거래원 외국계매수총합
-
-64 - (float) 신용잔고비율
-
-65 - (char) CB여부
-
-코드
- 내용
-
-'0'
- 초기
-
-'1'
- CB발동
-
-'2'
- CB해제
-
-
-66 - (char) 관리구분
-
-코드
- 내용
-
-'Y'
- 관리종목
-
-'N'
- 정상종목
-
-
-67 -(char)투자경고구분
-
-코드
- 내용
-
-'1'
- 정상
-
-'2'
- 주의
-
-'3'
- 경고
-
-'4'
- 위험예고
-
-'5'
- 위험
-
-
-68 -(char)거래정지구분
-
-코드
- 내용
-
-'Y'
- 거래정지종목
-
-'N'
- 정상종목
-
-
-69 -(char) 불성실 공시구분
-
-[거래소/코스닥]
-
-코드
- 내용
-
-'0'
- 정상
-
-'1'
- 불성실 공시
-
-
-[프리보드]
-
-코드
- 내용
-
-'0'
- 정상
-
-'1'
- 불성실공시1회
-
-'2'
- 불성실공시2회
-
-
-70 - (long) BPS
-
-
+23 - 하한가(ulong or float)
 
 반환값: 데이터 종류에 해당하는 값
 
+
+
 value = object.GetDataValue (Type,index)
 
-사용하지 않음
+type에 해당하는 데이터를 반환합니다
+
+type: 요청한 필드의 index - 필드는 요청한 필드 값으로 오름차순으로 정렬되어 있음
+
+index: 요청한 종목의 index
+
+
 
 object.Subscribe()
 
@@ -487,25 +340,43 @@ object.Unsubscribe()
 
 object.Request()
 
-종목 코드의 현재가 관련 데이터를 요청한다
+해당하는 데이터를 요청한다
 
 object.BlockRequest()
 
 데이터 요청.Blocking Mode
 
 Event
+
 Object.Received
 
-종목코드의 현재가 관련 데이터를 수신할 때 발생하는 이벤트
+해당하는 데이터를 수신했을 때 발생하는 이벤트
+
 
 '''
 
-print(generateClass(helpTxt))
+# 설명 false
+print(generateClass(helpTxt, False))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 ########## 생성된 코드 ############
-
+'''
 from cppy.CpDib import StockMst
 
 
@@ -514,7 +385,7 @@ class SampleStockMst(object):
         self.com = StockMst(self.response)  # event handler
 
     def request(self):
-        self.com.SetInputValue(0, v0)  # 0 string  종목 코드
+        self.com.SetInputValue(0, '')  # 0 string  종목 코드
 
     def response(self):
         h0 = self.com.GetHeaderValue(0)  # 0 string  종목 코드
@@ -772,4 +643,4 @@ class SampleStockMst(object):
              불성실공시2회
             """
         h70 = self.com.GetHeaderValue(70)  # 70 long  BPS
-
+'''

@@ -1,77 +1,74 @@
 # coding: utf-8
 
-from cppy.CpUtil import CpCybos
-import cppy.util
-import pythoncom
-import time
-import queue
-from cppy.CpSysDib import CpSvrNew7043
+from cppy.util import getDictPriceKey
+from cppy.CpSysDib import StockChart
 
+import matplotlib.pyplot as plt
 
-class SampleCpSvrNew7043(object):
-    ''' 거래소,코스닥 등락현황(상한,하한,상승,하락 등등) 데이터를 요청하고 수신합니다'''
-
-    def __init__(self, q):
-        self.com = CpSvrNew7043(self.response)
-        self.q = q
+class SampleStockChart(object):
+    def __init__(self):
+        self.com = StockChart(self.response)  # event handler
+        self.cod = 'A003540'
+        self.dt = 20170308
+        self.dic = {}
+        self.dic_keys_sort = []
 
     def request(self):
-        self.com.SetInputValue(0, ord('0'))  # char  시장구분
-        self.com.SetInputValue(1, ord('2'))  # char  선택기준구분
-        self.com.SetInputValue(2, ord('1'))  # char  기준일자구분
-        self.com.SetInputValue(3, 21)  # short  순서구분
-        self.com.SetInputValue(4, ord('1'))  # char  관리구분
-        self.com.SetInputValue(5, ord('3'))  # char  거래량구분
-        self.com.SetInputValue(6, ord('0'))  # char  기간구분
-        self.com.SetInputValue(7, 3)  # short  등락률 시작 (선택기준구분이 상승,하락인 경우만 유효)
-        self.com.SetInputValue(8, 30)  # short  등락률 끝    (선택기준구분이 상승,하락인 경우만 유효)
-        self.q.put(self.com)
+        self.com.SetInputValue(0, self.cod)  # 0 string : 주식(A003540), 업종(U001), ELW(J517016)의 종목코드
+        self.com.SetInputValue(1, ord('1'))  # 1 char :
+        self.com.SetInputValue(2, self.dt )  # 2 ulong : YYYYMMDD형식으로 데이터의 마지막(가장 최근) 날짜 Default(0) - 최근 거래날짜
+        self.com.SetInputValue(3, self.dt )  # 3 ulong : YYYYMMDD형식으로 데이터의 시작(가장 오래된) 날짜
+        self.com.SetInputValue(5, [1,2,3,4,5,8])  # 5 long or long array : 필드 또는 필드 배열
+        self.com.SetInputValue(6, ord('m'))  # 6 char
+        self.com.SetInputValue(10, ord('3'))  # 10 char
 
     def response(self):
-        h0 = self.com.GetHeaderValue(0)  # short  해당 종목 건수
-        h1 = self.com.GetHeaderValue(1)  # short  총 종목 건수
+        h3 = self.com.GetHeaderValue(3)  # 3 long
+        h14 = self.com.GetHeaderValue(14) # high
+        h15 = self.com.GetHeaderValue(15) # low
 
-        for i in range(h0):  # 조회할 건수를 세팅하세요
-            d0 = self.com.GetDataValue(0, i)  # string  종목코드
-            d1 = self.com.GetDataValue(1, i)  # string  종목명
-            d2 = self.com.GetDataValue(2, i)  # long  현재가
-            d3 = self.com.GetDataValue(3, i)  # char  대비플래그
-            d4 = self.com.GetDataValue(4, i)  # long  대비
-            d5 = self.com.GetDataValue(5, i)  # float  대비율(등락률)
-            d6 = self.com.GetDataValue(6, i)  # long  거래량
-            d7 = self.com.GetDataValue(7, i)  # long
-            d8 = self.com.GetDataValue(8, i)  # long
-            d10 = self.com.GetDataValue(10, i)  # long
+        self.dic_keys_sort = [x for x in self.dic_keys_sort if x >= h15 and x <= h14]
 
-        # 연속처리
-        iscont = self.com.GetContinue()
-        if iscont == 1:
-            self.q.put(self.com)
-        else:
-            self.request()
+        for i in range(h3):
+            tim = self.com.GetDataValue(0, h3-1-i)
+            opn = self.com.GetDataValue(1, h3-1-i)
+            hig = self.com.GetDataValue(2, h3-1-i)
+            low = self.com.GetDataValue(3, h3-1-i)
+            clr = self.com.GetDataValue(4, h3-1-i)
+            vol = self.com.GetDataValue(5, h3-1-i)
+            prs = [ x for x in self.dic_keys_sort if x >= low and x <= hig]
+
+            avg = int(vol / len(prs))
+
+            for j in prs:
+                self.dic[j] += avg
+
+            if i % 5 == 0:
+                val_lists_by_sorted_key = [self.dic[x] for x in self.dic_keys_sort]
+                plt.plot(val_lists_by_sorted_key, self.dic_keys_sort)
+                plt.title(self.cod)
+                plt.savefig('./pngs/%s%03d.png'%(self.cod, i))
+                plt.close()
 
 
 
 
-# ======================== #
-cpcybos = CpCybos()
-isconnect = cpcybos.GetIsConnect()
+cod = 'A154040'
+dt = 20170314
 
-if isconnect == 1:
-    # 접속되어 있는 경우
+dicprs = getDictPriceKey(cod)
+stkchart = SampleStockChart()
 
-    # 일반적인 종목 리스트 얻어옴
-    cod_lists = cppy.util.getCommonStockCods()
+# init data
+stkchart.cod = cod
+stkchart.dt = dt
+stkchart.dic = dicprs
+stkchart.dic_keys_sort = sorted(dicprs.keys())
 
-    print(len(cod_lists))
+stkchart.request()
+stkchart.com.BlockRequest()
 
-    # request 요청 객체 담아두는 queue 선언
-    rqQueue = queue.Queue()
 
-    # 메세지 펌핑 루프
-    for rqBool in cppy.util.generatorIntervalRequest(rqQueue):
-        pythoncom.PumpWaitingMessages()
-        time.sleep(0.001)
+print('done')
 
-else:
-    print('cybosplus 접속끊겨있는 상태입니다.')
+

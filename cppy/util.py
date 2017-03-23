@@ -1,6 +1,7 @@
 # coding: utf-8
 from cppy.CpUtil import CpCodeMgr
 from cppy.CpUtil import CpCybos
+from cppy.CpUtil import CpStockCode
 
 import queue
 
@@ -55,6 +56,9 @@ def getCommonStockCods():
     ret.sort()
     return ret
 
+class QuitCls:
+    def __init__(self):
+        self.quit =True
 
 def generatorIntervalRequest(q, waitTick=250, limitType=CpCybos.LT_NONTRADE_REQUEST):
     '''
@@ -80,6 +84,11 @@ def generatorIntervalRequest(q, waitTick=250, limitType=CpCybos.LT_NONTRADE_REQU
                 try:
                     # queue에서 가져옴
                     itm = q.get_nowait()
+                    try:
+                        if itm.quit:
+                            return False
+                    except AttributeError:
+                        pass
                     itm.Request()
                     ret = True
                     desc_cnt = waitTick
@@ -95,13 +104,30 @@ def generatorIntervalRequest(q, waitTick=250, limitType=CpCybos.LT_NONTRADE_REQU
         yield ret
 
 
-
+def getDictPriceKey(cod):
+    '''
+    종목의 하한가부터 상한가까지 key(int)가 있는 dictionary를 반환합니다.
+     value값은 0으로 초기화되어 있습니다.
+    :param cod: 종목코드
+    :return:  dictionary
+    '''
+    dic_pr = {}
+    cpstkcod = CpStockCode()
+    cpcodmgr = CpCodeMgr()
+    min_pr = cpcodmgr.GetStockMinPrice(cod)
+    max_pr = cpcodmgr.GetStockMaxPrice(cod)
+    now_pr = min_pr
+    dic_pr[min_pr] = 0
+    while now_pr < max_pr:
+        now_pr += cpstkcod.GetPriceUnit(cod, now_pr, 1)
+        dic_pr[now_pr] = 0
+    return dic_pr
 
 
 
 import re
 
-def generateClass(txt):
+def generateClass(txt, description=True):
     '''
         코드생성해주는 유틸리티 펑션
         Help 파일의 페이지의 설명을 읽어 샘플클래스로 생성,
@@ -126,7 +152,7 @@ def generateClass(txt):
             return ('DATA_VAL', None)
         if line.find('object.Subscribe') != -1:
             return ('SUB', None)
-        m = re.search(r'^\s*(\d+)\s*-\s*\(\s*(\w+)\s*\)(.*)', line)
+        m = re.search(r'^\s*(\d+)\s*-\s*.*?\(\s*([^)]+)\s*\)(.*)', line)
         if m:
             return ('TYP_VAL', m)
 
@@ -159,6 +185,7 @@ def generateClass(txt):
     # 두 토큰의 관계에 따라 rule에 의해 parsing
     for i, line in enumerate(lines[1:]):
         lookahead = token(line)
+        #print (lookahead, line)
         if lookahead == None:
             continue
         if lookahead[0] == 'SKIP':
@@ -293,7 +320,7 @@ class Sample%s(object):
             val = 'ord(v%s)' % itm[0]
         else:
             val = 'v%s' % itm[0]
-        if itm[3] != '':
+        if itm[3] != '' and description:
             desc = '"""%s"""\n\t\t' % itm[3]
         else:
             desc = ''
@@ -308,7 +335,7 @@ class Sample%s(object):
     # header value code
     head_cod = ''
     for itm in head_val_list:
-        if itm[3] != '':
+        if itm[3] != ''and description:
             desc = '"""%s"""\n\t\t' % itm[3]
         else:
             desc = ''
@@ -326,7 +353,7 @@ class Sample%s(object):
     if len(data_val_list) > 0:
         data_code = 'for i in range(cnt): # cnt 값을 넣어주세요\n\t\t\t'
     for itm in data_val_list:
-        if itm[3] != '':
+        if itm[3] != ''and description:
             desc = '"""%s"""\n\t\t\t' % itm[3]
         else:
             desc = ''

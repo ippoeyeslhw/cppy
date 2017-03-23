@@ -55,3 +55,8 @@ docs/_build/
 .idea*
 *.chm
 CybosPlusHelp*
+pngs*
+gifs*
+ignores*
+*.bat
+*.db
